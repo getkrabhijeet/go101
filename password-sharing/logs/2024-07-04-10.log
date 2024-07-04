@@ -1,0 +1,2 @@
+{"level":"info","ts":1720089544.6298456,"caller":"server/server.go:51","msg":"Starting webserver ..."}
+{"level":"info","ts":1720090002.9591315,"caller":"server/server.go:51","msg":"Starting webserver ..."}

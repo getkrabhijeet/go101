@@ -11,7 +11,7 @@ import (
 
 type Config struct {
 	Database struct {
-		ConnectionString string `mapstructure:"connectingstring"`
+		ConnectionString string `mapstructure:"connectionstring"`
 		Provider         string `mapstructure:"provider"`
 	} `mapstructure:"database"`
 

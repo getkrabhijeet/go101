@@ -28,32 +28,32 @@ services:
       retries: 5
       start_period: 15s
 
-  app2:
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
-    build:
-      context: .
-    environment:
-      GIN_MODE: release
-      WEB_ENV: docker
-      PSCONFIG_APP_PORT: 82
-      PSCONFIG_APP_ADDRESS: app2
-      PSCONFIG_APP_SERVICEID: 2
-    expose:
-      - 82
-    volumes:
-      - logs:/logs/
-    depends_on:
-      - db
-      - consul
-    healthcheck:
-      test: [ "CMD", "curl", "-s", "-f", "http://app2:82/health" ]
-      interval: 10s
-      timeout: 2s
-      retries: 5
-      start_period: 15s
+  # app2:
+  #   restart: always
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #   build:
+  #     context: .
+  #   environment:
+  #     GIN_MODE: release
+  #     WEB_ENV: docker
+  #     PSCONFIG_APP_PORT: 82
+  #     PSCONFIG_APP_ADDRESS: app2
+  #     PSCONFIG_APP_SERVICEID: 2
+  #   expose:
+  #     - 82
+  #   volumes:
+  #     - logs:/logs/
+  #   depends_on:
+  #     - db
+  #     - consul
+  #   healthcheck:
+  #     test: [ "CMD", "curl", "-s", "-f", "http://app2:82/health" ]
+  #     interval: 10s
+  #     timeout: 2s
+  #     retries: 5
+  #     start_period: 15s
 
   consul:
     image: consul:1.13
@@ -74,7 +74,7 @@ services:
     volumes:
       - ./resources/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     ports:
-      - 8080:80
+      - 8081:80
       - 1936:1936
 
   db:
@@ -99,101 +99,101 @@ services:
     ports:
       - 5050:80
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.1
-    restart: always
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    volumes:
-      - elasticsearch-storage:/usr/share/elasticsearch/data
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-s",
-          "-f",
-          "http://elasticsearch:9200/_cat/health"
-        ]
-      interval: 3s
-      timeout: 3s
-      retries: 10
-      start_period: 30s
-    expose:
-      - 9200
-      - 9300
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.4.1
+  #   restart: always
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #   volumes:
+  #     - elasticsearch-storage:/usr/share/elasticsearch/data
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #     nofile:
+  #       soft: 65536
+  #       hard: 65536
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "curl",
+  #         "-s",
+  #         "-f",
+  #         "http://elasticsearch:9200/_cat/health"
+  #       ]
+  #     interval: 3s
+  #     timeout: 3s
+  #     retries: 10
+  #     start_period: 30s
+  #   expose:
+  #     - 9200
+  #     - 9300
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.4.1
-    restart: always
-    volumes:
-      - ./resources/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
+  # logstash:
+  #   image: docker.elastic.co/logstash/logstash:8.4.1
+  #   restart: always
+  #   volumes:
+  #     - ./resources/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
 
-  filebeat:
-    image: docker.elastic.co/beats/filebeat:8.4.1
-    restart: always
-    command: filebeat -e -strict.perms=false
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    volumes:
-      - ./resources/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - logs:/logs/:ro
+  # filebeat:
+  #   image: docker.elastic.co/beats/filebeat:8.4.1
+  #   restart: always
+  #   command: filebeat -e -strict.perms=false
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./resources/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+  #     - logs:/logs/:ro
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.4.1
-    restart: always
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-s",
-          "-f",
-          "http://kibana:5601/api/status"
-        ]
-      interval: 3s
-      timeout: 3s
-      retries: 50
-    ports:
-      - 5601:5601
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.4.1
+  #   restart: always
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "curl",
+  #         "-s",
+  #         "-f",
+  #         "http://kibana:5601/api/status"
+  #       ]
+  #     interval: 3s
+  #     timeout: 3s
+  #     retries: 50
+  #   ports:
+  #     - 5601:5601
 
-  prometheus:
-    image: prom/prometheus
-    restart: always
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
-    volumes:
-      - ./resources/prometheus.yml:/etc/prometheus/prometheus.yml
-    expose:
-      - 9090
+  # prometheus:
+  #   image: prom/prometheus
+  #   restart: always
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #     - '--web.console.libraries=/etc/prometheus/console_libraries'
+  #     - '--web.console.templates=/etc/prometheus/consoles'
+  #     - '--storage.tsdb.retention.time=200h'
+  #     - '--web.enable-lifecycle'
+  #   volumes:
+  #     - ./resources/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   expose:
+  #     - 9090
 
-  grafana:
-    image: grafana/grafana
-    restart: always
-    ports:
-      - 3000:3000
-    volumes:
-      - grafana-storage:/var/lib/grafana
+  # grafana:
+  #   image: grafana/grafana
+  #   restart: always
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - grafana-storage:/var/lib/grafana
 
 volumes:
   db:
